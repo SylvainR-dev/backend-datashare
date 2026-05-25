@@ -1,5 +1,7 @@
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/BackendApplication.java
+/home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/controller/AuthController.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/controller/UserController.java
+/home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/dto/LoginDTO.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/dto/RegisterDTO.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/dto/UserRequestDTO.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/dto/UserResponseDTO.java
@@ -7,5 +9,8 @@
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/exception/GlobalExceptionHandler.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/mapper/UserDTOMapper.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/repository/UserRepository.java
+/home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/security/JwtFilter.java
+/home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/security/JwtService.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/security/SecurityConfig.java
+/home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/service/AuthService.java
 /home/jarod/Bureau/backend-datashare/src/main/java/com/datashare/backend/service/UserService.java

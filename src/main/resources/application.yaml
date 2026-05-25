@@ -13,3 +13,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: GMm9AtD9vC62NvJcraNk4U01YfgvqXUrLPIhLX1amYo2qr5VC1aKezYnIDHyYO5ngPfcRberlGWUGP7L76lRZw==
+  expiration: 86400000
