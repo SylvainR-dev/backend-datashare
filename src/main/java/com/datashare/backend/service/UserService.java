@@ -6,7 +6,6 @@ import com.datashare.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -36,7 +35,7 @@ public class UserService {
 // log info = comme un journal de bord, il retrace juste pour dire qu'il est en train d'enregister un nouvel utilisateur. 
 
 
-    public void register(UserEntity user) {
+    public UserResponseDTO register(UserEntity user) {
         Assert.notNull(user, "User must not be null");
         log.info("Registering new user");
 
@@ -60,8 +59,7 @@ public class UserService {
 // user.setPassword = remplace le mot de passe en clair par le hash
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-    }
+
 
 
 // sauvegarder en base de données
@@ -75,4 +73,5 @@ public class UserService {
         response.setCreatedAt(savedUser.getCreatedAt());
         return response;
 
+    }
 }

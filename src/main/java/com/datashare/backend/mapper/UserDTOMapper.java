@@ -3,7 +3,7 @@
 // UserDTOMapper est un convertisseur qui transforme le RegisterDTO en UserEntity.
 
 
-package com.mapper;
+package com.datashare.backend.mapper;
 
 import com.datashare.backend.dto.RegisterDTO;
 import com.datashare.backend.entities.UserEntity;
