@@ -17,3 +17,11 @@ spring:
 jwt:
   secret: GMm9AtD9vC62NvJcraNk4U01YfgvqXUrLPIhLX1amYo2qr5VC1aKezYnIDHyYO5ngPfcRberlGWUGP7L76lRZw==
   expiration: 86400000
+
+aws:
+  s3:
+    bucket: votre-nom-de-bucket
+    region: eu-west-3
+  credentials:
+    access-key: VOTRE_ACCESS_KEY
+    secret-key: VOTRE_SECRET_KEY
