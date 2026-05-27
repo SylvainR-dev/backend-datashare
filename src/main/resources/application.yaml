@@ -14,14 +14,22 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-jwt:
-  secret: GMm9AtD9vC62NvJcraNk4U01YfgvqXUrLPIhLX1amYo2qr5VC1aKezYnIDHyYO5ngPfcRberlGWUGP7L76lRZw==
-  expiration: 86400000
+# ddl-auto: update = c'est ce qui permet de configurer Spring Boot pour qu'il automatise la création de tables dans la base de données. 
+# Ensuite dans le Jwt j'avais laissé le secret de JWT. Il ne faut pas, et le mettre dans .env. 
 
+# je retrouve ici les variables d'environnement (ex = ${JWT_SECRET}) implantées dans .env. Pour sécuriser au maximum les données. 
+# Aucune information ne transparait ici. 
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+# ici aussi les variables d'environnement concernant Amazon (stockage)
 aws:
   s3:
-    bucket: votre-nom-de-bucket
-    region: eu-west-3
+    bucket: ${AWS_BUCKET}
+    region: ${AWS_REGION}
   credentials:
-    access-key: VOTRE_ACCESS_KEY
-    secret-key: VOTRE_SECRET_KEY
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+
