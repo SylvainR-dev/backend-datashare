@@ -1,3 +1,12 @@
+// le StorageService s'occupe uniquement de la gestion physique des fichiers sur S3.Le StorageService s'occupe uniquement de la gestion physique des fichiers sur S3.
+
+// Il fait 4 choses : 
+// 1) construit la connexion S3 avec init.
+// 2 ) Envoie le fichier sur S3 avec saveFile
+// 3 ) Supprime le fichier le fichier si besoin sur S3 avec deleteFile
+// 4) construit l'url pour accéder au fichier avec getFileUrl
+
+
 package com.datashare.backend.service;
 
 import jakarta.annotation.PostConstruct;
@@ -58,6 +67,12 @@ public class StorageService {
 
         return uniqueFileName;
     }
+
+
+    // Pourquoi il y a un delete ?
+    // Si l'utilisateur supprime manuellement son fichier.
+    // Lors de l'expiration du fichier.
+
 
     public void deleteFile(String fileName) {
         s3Client.deleteObject(

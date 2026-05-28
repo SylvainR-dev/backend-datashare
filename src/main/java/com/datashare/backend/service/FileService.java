@@ -1,6 +1,6 @@
 package com.datashare.backend.service;
 
-import com.datashare.backend.dto.FileDTO;
+import com.datashare.backend.dto.FileRequestDTO;
 import com.datashare.backend.dto.FileResponseDTO;
 import com.datashare.backend.entities.FileEntity;
 import com.datashare.backend.entities.UserEntity;
@@ -24,7 +24,7 @@ public class FileService {
         this.storageService = storageService;
     }
 
-    public FileResponseDTO uploadFile(MultipartFile file, FileDTO fileDTO, UserEntity user) throws IOException {
+    public FileResponseDTO uploadFile(MultipartFile file, FileRequestDTO fileRequestDTO, UserEntity user) throws IOException {
 
         // 1. Sauvegarde le fichier sur S3
         String storagePath = storageService.saveFile(file);
@@ -33,8 +33,8 @@ public class FileService {
         String token = UUID.randomUUID().toString();
 
         // 3. Calcule la date d'expiration (7 jours par défaut)
-        LocalDateTime expirationDate = fileDTO.getExpirationDate() != null
-                ? fileDTO.getExpirationDate()
+        LocalDateTime expirationDate = fileRequestDTO.getExpirationDate() != null
+                ? fileRequestDTO.getExpirationDate()
                 : LocalDateTime.now().plusDays(7);
 
         // 4. Construit l'entité à sauvegarder en base
@@ -43,7 +43,6 @@ public class FileService {
         fileEntity.setSize(file.getSize());
         fileEntity.setToken(token);
         fileEntity.setStoragePath(storagePath);
-        fileEntity.setPassword(fileDTO.getPassword());
         fileEntity.setExpirationDate(expirationDate);
         fileEntity.setUser(user);
 

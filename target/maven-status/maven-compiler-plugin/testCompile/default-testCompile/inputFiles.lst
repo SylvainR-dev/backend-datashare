@@ -1,5 +1,7 @@
 /home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/BackendApplicationTests.java
 /home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/controller/AuthControllerTest.java
+/home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/controller/FileControllerTest.java
 /home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/controller/UserControllerTest.java
 /home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/service/AuthServiceTest.java
+/home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/service/FileServiceTest.java
 /home/jarod/Bureau/backend-datashare/src/test/java/com/datashare/backend/service/UserServiceTest.java
