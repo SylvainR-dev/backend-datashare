@@ -5,6 +5,7 @@ import com.datashare.backend.dto.FileResponseDTO;
 import com.datashare.backend.entities.FileEntity;
 import com.datashare.backend.entities.UserEntity;
 import com.datashare.backend.service.FileService;
+import com.datashare.backend.service.StorageService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,13 +16,15 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/files")
+@RequestMapping("/api/files")
 public class FileController {
 
     private final FileService fileService;
+    private final StorageService storageService;
 
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, StorageService storageService) {
         this.fileService = fileService;
+        this.storageService = storageService;
     }
 
     // Upload avec compte
@@ -35,13 +38,23 @@ public class FileController {
         return ResponseEntity.ok(response);
     }
 
-    // Téléchargement via token
+    // Téléchargement via token — récupère les infos du fichier
     @GetMapping("/{token}")
     public ResponseEntity<FileEntity> getFileByToken(
             @PathVariable String token) {
 
         FileEntity fileEntity = fileService.getFileByToken(token);
         return ResponseEntity.ok(fileEntity);
+    }
+
+    // URL pré-signée temporaire pour télécharger le fichier
+    @GetMapping("/{token}/download-url")
+    public ResponseEntity<String> getDownloadUrl(
+            @PathVariable String token) {
+
+        FileEntity fileEntity = fileService.getFileByToken(token);
+        String presignedUrl = storageService.generatePresignedUrl(fileEntity.getStoragePath());
+        return ResponseEntity.ok(presignedUrl);
     }
 
     // Historique

@@ -1,12 +1,3 @@
-// le StorageService s'occupe uniquement de la gestion physique des fichiers sur S3.Le StorageService s'occupe uniquement de la gestion physique des fichiers sur S3.
-
-// Il fait 4 choses : 
-// 1) construit la connexion S3 avec init.
-// 2 ) Envoie le fichier sur S3 avec saveFile
-// 3 ) Supprime le fichier le fichier si besoin sur S3 avec deleteFile
-// 4) construit l'url pour accéder au fichier avec getFileUrl
-
-
 package com.datashare.backend.service;
 
 import jakarta.annotation.PostConstruct;
@@ -20,10 +11,23 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
 import java.util.UUID;
+
+// le StorageService s'occupe uniquement de la gestion physique des fichiers sur S3.
+// Il fait 5 choses :
+// 1) construit la connexion S3 avec init.
+// 2) Envoie le fichier sur S3 avec saveFile
+// 3) Supprime le fichier si besoin sur S3 avec deleteFile
+// 4) construit l'url pour accéder au fichier avec getFileUrl
+// 5) génère une URL pré-signée temporaire avec generatePresignedUrl
 
 @Service
 public class StorageService {
@@ -68,11 +72,9 @@ public class StorageService {
         return uniqueFileName;
     }
 
-
     // Pourquoi il y a un delete ?
     // Si l'utilisateur supprime manuellement son fichier.
     // Lors de l'expiration du fichier.
-
 
     public void deleteFile(String fileName) {
         s3Client.deleteObject(
@@ -85,5 +87,34 @@ public class StorageService {
 
     public String getFileUrl(String fileName) {
         return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
+    }
+
+    // generatePresignedUrl génère une URL temporaire (15 minutes) pour accéder au fichier
+    // sans rendre le bucket public
+
+    public String generatePresignedUrl(String fileName) {
+        S3Presigner presigner = S3Presigner.builder()
+            .region(Region.of(region))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)
+                )
+            )
+            .build();
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(fileName)
+            .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(15))
+            .getObjectRequest(getObjectRequest)
+            .build();
+
+        URL presignedUrl = presigner.presignGetObject(presignRequest).url();
+        presigner.close();
+
+        return presignedUrl.toString();
     }
 }

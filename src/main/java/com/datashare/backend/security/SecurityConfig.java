@@ -1,5 +1,3 @@
-// Voir la fin pour la logique de flux avec le SecurityConfig
-
 package com.datashare.backend.security;
 
 import lombok.RequiredArgsConstructor;
@@ -12,6 +10,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,14 +29,29 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/register", "/api/login").permitAll()
+                .requestMatchers("/api/files/*/download-url").permitAll()
+                .requestMatchers("/api/files/*").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -42,7 +60,7 @@ public class SecurityConfig {
 }
 
 
-// Pour l'inscription : 
+// Pour l'inscription :
 
 // SecurityConfig (vérifie que /api/register est publique → laisse passer)
 //Front
@@ -57,9 +75,7 @@ public class SecurityConfig {
 //      ← 201 Created
 
 
-
-// Pour la connexion : 
-
+// Pour la connexion :
 
 //SecurityConfig (vérifie que /api/login est publique → laisse passer)
 // Front
@@ -74,9 +90,7 @@ public class SecurityConfig {
 //    ← 200 OK + token JWT
 
 
-
-// Requête protégée (après connexion) 
-
+// Requête protégée (après connexion)
 
 // SecurityConfig (vérifie que la route est protégée → passe par JwtFilter)
 //Front (envoie token dans header Authorization: Bearer token)
@@ -85,3 +99,12 @@ public class SecurityConfig {
 //      → UserRepository (vérifie que l'utilisateur existe)
 //    → SecurityContext (authentifie l'utilisateur)
 //  → Suite normale de la requête
+
+// URL pré-signée (téléchargement public via lien)
+// SecurityConfig (vérifie que /api/files/*/download-url est publique → laisse passer)
+// Front
+//  → GET /api/files/{token}/download-url
+//    → FileController → FileService → récupère le fichier par token
+//    → StorageService → génère URL pré-signée S3 (valide 15 min)
+//  ← retourne l'URL pré-signée
+// Front → redirige vers l'URL S3 pour télécharger
