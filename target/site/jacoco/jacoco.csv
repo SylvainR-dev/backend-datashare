@@ -1,0 +1,15 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+backend,com.datashare.backend.entities,UserEntity,8,8,0,0,4,3,4,3,4,3
+backend,com.datashare.backend.service,FileService,18,119,2,2,2,32,4,5,2,5
+backend,com.datashare.backend.service,StorageService,84,22,0,0,32,8,4,2,4,2
+backend,com.datashare.backend.service,AuthService,0,50,0,4,0,10,0,4,0,2
+backend,com.datashare.backend.service,UserService,0,55,0,2,0,13,0,3,0,2
+backend,com.datashare.backend.mapper,UserDTOMapper,0,17,0,0,0,5,0,2,0,2
+backend,com.datashare.backend.security,JwtService,2,71,2,2,0,18,2,7,0,7
+backend,com.datashare.backend.security,SecurityConfig,0,105,0,0,0,21,0,7,0,7
+backend,com.datashare.backend.security,JwtFilter,0,89,5,7,0,22,5,2,0,1
+backend,com.datashare.backend.exception,GlobalExceptionHandler,0,10,0,0,0,2,0,2,0,2
+backend,com.datashare.backend,BackendApplication,5,3,0,0,2,1,1,1,1,1
+backend,com.datashare.backend.controller,AuthController,0,11,0,0,0,2,0,1,0,1
+backend,com.datashare.backend.controller,FileController,14,44,0,0,3,12,1,5,1,5
+backend,com.datashare.backend.controller,UserController,0,14,0,0,0,2,0,1,0,1

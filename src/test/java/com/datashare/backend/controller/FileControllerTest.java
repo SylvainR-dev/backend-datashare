@@ -93,7 +93,7 @@ public class FileControllerTest {
 
         when(storageService.saveFile(any())).thenReturn("unique_test.pdf");
 
-        mockMvc.perform(multipart("/files")
+        mockMvc.perform(multipart("/api/files")
                 .file(file)
                 .file(metadata)
                 .header("Authorization", "Bearer " + token))
@@ -114,7 +114,7 @@ public class FileControllerTest {
         fileEntity.setExpirationDate(LocalDateTime.now().plusDays(7));
         fileRepository.save(fileEntity);
 
-        mockMvc.perform(get("/files/mon-token-unique")
+        mockMvc.perform(get("/api/files/mon-token-unique")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("mon-token-unique"))
@@ -125,7 +125,7 @@ public class FileControllerTest {
     @Test
     public void testGetFilesByUser() throws Exception {
 
-        mockMvc.perform(get("/files")
+        mockMvc.perform(get("/api/files")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
@@ -145,7 +145,7 @@ public class FileControllerTest {
 
         doNothing().when(storageService).deleteFile(any());
 
-        mockMvc.perform(delete("/files/" + saved.getId())
+        mockMvc.perform(delete("/api/files/" + saved.getId())
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());
     }

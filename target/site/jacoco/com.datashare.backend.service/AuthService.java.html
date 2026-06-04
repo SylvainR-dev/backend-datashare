@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.datashare.backend.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">// AuthService gère la logique métier de la connexion
+
+// La logique métier est quoi : 
+// C'est le fichier qui prends la décision.
+// Il regarde si le mail existe, si le mot de passe est ok, si tout bon renvoie un token JWT
+
+// Flux : LoginDTO = cherche l'utilisateur en base = vérifie le mot de passe = génère le token JWT
+
+// Flux détaillé : 
+// 1) Front (interface connexion)
+// 2) AuthController (reçoit LoginDTO)
+// 3) AuthService
+// 3.1) UserRepository → BDD (cherche l'utilisateur)
+//3.2 ) retourne UserEntity
+// 4) vérifie le mot de passe avec PasswordEncoder
+// 5) génère le token JWT avec JwtService
+// 6) retourne le token JWT au front
+
+
+package com.datashare.backend.service;
+
+import com.datashare.backend.dto.LoginDTO;
+import com.datashare.backend.entities.UserEntity;
+import com.datashare.backend.repository.UserRepository;
+import com.datashare.backend.security.JwtService;
+
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+
+
+
+<span class="fc" id="L38">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    public String login(LoginDTO loginDTO) {
+<span class="fc" id="L48">        log.info(&quot;Login attempt for email: {}&quot;, loginDTO.getEmail());</span>
+
+        // 1. Cherche l'utilisateur en base par email
+<span class="fc" id="L51">        Optional&lt;UserEntity&gt; optionalUser = userRepository.findByEmail(loginDTO.getEmail());</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (optionalUser.isEmpty()) {</span>
+<span class="fc" id="L53">            throw new IllegalArgumentException(&quot;Invalid credentials&quot;);</span>
+        }
+
+<span class="fc" id="L56">        UserEntity user = optionalUser.get();</span>
+
+        // 2. Vérifie le mot de passe
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {</span>
+<span class="fc" id="L60">            throw new IllegalArgumentException(&quot;Invalid credentials&quot;);</span>
+        }
+
+        // 3. Génère et retourne le token JWT
+<span class="fc" id="L64">        log.info(&quot;Login successful for email: {}&quot;, loginDTO.getEmail());</span>
+<span class="fc" id="L65">        return jwtService.generateToken(user);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">backend</a> &gt; <a href="index.source.html" class="el_package">com.datashare.backend.security</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.datashare.backend.security;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtFilter jwtFilter;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L28">        return new BCryptPasswordEncoder();</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+<span class="fc" id="L33">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="fc" id="L34">        configuration.setAllowedOrigins(List.of(&quot;http://localhost:4200&quot;));</span>
+<span class="fc" id="L35">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L36">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L37">        configuration.setAllowCredentials(true);</span>
+<span class="fc" id="L38">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L39">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="fc" id="L40">        return source;</span>
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L45">        http</span>
+<span class="fc" id="L46">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
+<span class="fc" id="L47">            .csrf(csrf -&gt; csrf.disable())</span>
+<span class="fc" id="L48">            .sessionManagement(session -&gt; session</span>
+<span class="fc" id="L49">                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+            )
+<span class="fc" id="L51">            .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L52">                .requestMatchers(&quot;/api/register&quot;, &quot;/api/login&quot;).permitAll()</span>
+<span class="fc" id="L53">                .requestMatchers(&quot;/api/files/*/download-url&quot;).permitAll()</span>
+<span class="fc" id="L54">                .requestMatchers(&quot;/api/files/*&quot;).permitAll()</span>
+<span class="fc" id="L55">                .anyRequest().authenticated()</span>
+            )
+<span class="fc" id="L57">            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);</span>
+<span class="fc" id="L58">        return http.build();</span>
+    }
+}
+
+
+// Pour l'inscription :
+
+// SecurityConfig (vérifie que /api/register est publique → laisse passer)
+//Front
+//  → POST /api/register (email + password en JSON)
+//    → UserController (@RequestBody convertit JSON en RegisterDTO)
+//      → UserDTOMapper (convertit RegisterDTO en UserEntity)
+//        → UserService
+//          → UserRepository → BDD (vérifie si email existe)
+//          → PasswordEncoder (hashe le mot de passe)
+//          → UserRepository → BDD (sauvegarde l'utilisateur)
+//        ← retourne UserResponseDTO (id + email + createdAt)
+//      ← 201 Created
+
+
+// Pour la connexion :
+
+//SecurityConfig (vérifie que /api/login est publique → laisse passer)
+// Front
+//  → POST /api/login (email + password en JSON)
+//    → AuthController (@RequestBody convertit JSON en LoginDTO)
+//      → AuthService
+//        → UserRepository → BDD (cherche l'utilisateur par email)
+//        ← retourne UserEntity
+//        → PasswordEncoder (vérifie le mot de passe)
+//        → JwtService (génère le token JWT)
+//      ← retourne le token JWT
+//    ← 200 OK + token JWT
+
+
+// Requête protégée (après connexion)
+
+// SecurityConfig (vérifie que la route est protégée → passe par JwtFilter)
+//Front (envoie token dans header Authorization: Bearer token)
+//  → JwtFilter (intercepte la requête)
+//    → JwtService (extrait et valide le token)
+//      → UserRepository (vérifie que l'utilisateur existe)
+//    → SecurityContext (authentifie l'utilisateur)
+//  → Suite normale de la requête
+
+// URL pré-signée (téléchargement public via lien)
+// SecurityConfig (vérifie que /api/files/*/download-url est publique → laisse passer)
+// Front
+//  → GET /api/files/{token}/download-url
+//    → FileController → FileService → récupère le fichier par token
+//    → StorageService → génère URL pré-signée S3 (valide 15 min)
+//  ← retourne l'URL pré-signée
+// Front → redirige vers l'URL S3 pour télécharger
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
