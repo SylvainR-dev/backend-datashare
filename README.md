@@ -12,9 +12,9 @@ API REST développée avec Spring Boot pour l'application de partage de fichiers
 
 ## Prérequis
 
-- Java 21
-- Maven 3.8.7
-- PostgreSQL 16
+- Java
+- Maven
+- PostgreSQL
 
 ## Installation
 
