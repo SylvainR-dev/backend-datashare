@@ -5,8 +5,10 @@ import com.datashare.backend.dto.FileResponseDTO;
 import com.datashare.backend.entities.FileEntity;
 import com.datashare.backend.entities.UserEntity;
 import com.datashare.backend.repository.FileRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -19,6 +21,12 @@ public class FileService {
     private final FileRepository fileRepository;
     private final StorageService storageService;
 
+    private static final List<String> FORBIDDEN_EXTENSIONS = List.of(
+            ".exe", ".bat", ".sh", ".cmd", ".msi", ".vbs", ".ps1"
+    );
+
+    private static final long MAX_FILE_SIZE = 1_073_741_824L; // 1 Go en bytes
+
     public FileService(FileRepository fileRepository, StorageService storageService) {
         this.fileRepository = fileRepository;
         this.storageService = storageService;
@@ -26,18 +34,33 @@ public class FileService {
 
     public FileResponseDTO uploadFile(MultipartFile file, FileRequestDTO fileRequestDTO, UserEntity user) throws IOException {
 
-        // 1. Sauvegarde le fichier sur S3
+        // 1. Vérifie l'extension du fichier
+        String fileName = file.getOriginalFilename();
+        if (fileName != null) {
+            String lowerCaseName = fileName.toLowerCase();
+            boolean isForbidden = FORBIDDEN_EXTENSIONS.stream().anyMatch(lowerCaseName::endsWith);
+            if (isForbidden) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Extension de fichier interdite");
+            }
+        }
+
+        // 2. Vérifie la taille du fichier
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fichier trop volumineux (max 1 Go)");
+        }
+
+        // 3. Sauvegarde le fichier sur S3
         String storagePath = storageService.saveFile(file);
 
-        // 2. Génère un token unique pour le lien de téléchargement
+        // 4. Génère un token unique pour le lien de téléchargement
         String token = UUID.randomUUID().toString();
 
-        // 3. Calcule la date d'expiration (7 jours par défaut)
+        // 5. Calcule la date d'expiration (7 jours par défaut)
         LocalDateTime expirationDate = fileRequestDTO.getExpirationDate() != null
                 ? fileRequestDTO.getExpirationDate()
                 : LocalDateTime.now().plusDays(7);
 
-        // 4. Construit l'entité à sauvegarder en base
+        // 6. Construit l'entité à sauvegarder en base
         FileEntity fileEntity = new FileEntity();
         fileEntity.setName(file.getOriginalFilename());
         fileEntity.setSize(file.getSize());
@@ -46,10 +69,10 @@ public class FileService {
         fileEntity.setExpirationDate(expirationDate);
         fileEntity.setUser(user);
 
-        // 5. Sauvegarde les métadonnées en base
+        // 7. Sauvegarde les métadonnées en base
         FileEntity saved = fileRepository.save(fileEntity);
 
-        // 6. Construit et retourne la réponse
+        // 8. Construit et retourne la réponse
         FileResponseDTO response = new FileResponseDTO();
         response.setToken(saved.getToken());
         response.setName(saved.getName());

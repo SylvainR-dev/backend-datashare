@@ -13,6 +13,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
 
 # ddl-auto: update = c'est ce qui permet de configurer Spring Boot pour qu'il automatise la création de tables dans la base de données. 
 # Ensuite dans le Jwt j'avais laissé le secret de JWT. Il ne faut pas, et le mettre dans .env. 
@@ -33,3 +37,14 @@ aws:
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
 
+# Ça expose uniquement l'endpoint /actuator/health que Docker utilise pour vérifier que le backend est vivant,
+#sans exposer d'autres informations sensibles.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

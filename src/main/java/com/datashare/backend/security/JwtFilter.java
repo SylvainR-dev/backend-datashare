@@ -24,12 +24,16 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getServletPath().equals("/actuator/health");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        System.out.println("Auth header: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -38,16 +42,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         String email = jwtService.extractEmail(token);
-        System.out.println("Email extrait: " + email);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             Optional<UserEntity> optionalUser = userRepository.findByEmail(email);
-            System.out.println("Utilisateur trouvé: " + optionalUser.isPresent());
 
             if (optionalUser.isPresent()) {
                 UserEntity user = optionalUser.get();
                 boolean valid = jwtService.isTokenValid(token, user);
-                System.out.println("Token valide: " + valid);
 
                 if (valid) {
                     UsernamePasswordAuthenticationToken authToken =
